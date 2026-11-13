@@ -51,3 +51,17 @@ Sign out and back in. Admin dashboard provides student listing, lesson/resource/
 - Admin overview, lesson/resource/activity creation, student/results views, and print-to-PDF reporting
 
 To reset or update a fresh install, import `setup.sql`. Existing database content is preserved by the seed checks. This is a school-project starter and should receive a security review before handling real student data on a public server.
+
+## Project contributors
+
+This computer-networking learning platform was prepared as a group capstone project. The proposal credits these contributors:
+
+- Leynard Ayala
+- Charlotte Chavez
+- Arjey Reñevo
+- Lenon Miranda
+- Wilfredo De Mesa Jr.
+
+## Project structure
+
+This is a page-based PHP application. `index.php` is the public landing page; `config/database.php` connects to MySQL/MariaDB; `setup.sql` creates and seeds the database; `student/` and `admin/` contain learner and administrator pages; `partials/` contains shared page layout; and `assets/` contains JavaScript interactions. It does not require Composer, Laravel, or `routes/web.php`.
