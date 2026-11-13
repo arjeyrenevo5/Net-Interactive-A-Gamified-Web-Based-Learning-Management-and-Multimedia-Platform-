@@ -1,0 +1,13 @@
+<?php
+require_once __DIR__.'/config/database.php';
+$id=filter_input(INPUT_GET,'id',FILTER_VALIDATE_INT) ?: 0;
+$stmt=$conn->prepare('SELECT * FROM lessons WHERE id=?'); $stmt->execute([$id]); $lesson=$stmt->fetch();
+if(!$lesson){http_response_code(404);$pageTitle='Lesson not found';require __DIR__.'/partials/header.php';echo '<section class="content-wrap"><h1>Lesson not found</h1><a href="'.e(app_url('lessons.php')).'">Back to lessons</a></section>';require __DIR__.'/partials/footer.php';exit;}
+require_login(); $notice='';
+if($_SERVER['REQUEST_METHOD']==='POST'){check_csrf();$save=$conn->prepare('INSERT INTO lesson_progress(user_id,lesson_id) VALUES(?,?) ON DUPLICATE KEY UPDATE completed_at=CURRENT_TIMESTAMP');$save->execute([$_SESSION['user_id'],$id]);$notice='Lesson marked complete. Nice work!';}
+$done=$conn->prepare('SELECT completed_at FROM lesson_progress WHERE user_id=? AND lesson_id=?');$done->execute([$_SESSION['user_id'],$id]);$completed=$done->fetchColumn();
+$related=$conn->prepare('SELECT id,title FROM quizzes WHERE lesson_id=? ORDER BY id LIMIT 1');$related->execute([$id]);$quiz=$related->fetch();
+$pageTitle=$lesson['title'];$activeNav='lessons';require __DIR__.'/partials/header.php';
+?>
+<section class="article-wrap"><a class="back-link" href="<?= e(app_url('lessons.php')) ?>">← All lessons</a><article class="article"><div class="article-head"><span class="category-chip"><?= e($lesson['category']) ?></span><span class="lesson-time"><?= (int)$lesson['minutes'] ?> MIN READ</span><h1><?= e($lesson['title']) ?></h1><p class="article-summary"><?= e($lesson['summary']) ?></p></div><div class="article-body"><?php foreach(preg_split('/\R\s*\R/',trim($lesson['body'])) as $paragraph): ?><p><?= nl2br(e($paragraph)) ?></p><?php endforeach; ?></div><div class="lesson-takeaway"><span>YOUR NEXT STEP</span><p>Explain the main idea in your own words, then try a related practice activity or quiz.</p></div><?php if($notice): ?><div class="notice success"><?= e($notice) ?></div><?php endif; ?><div class="article-actions"><?php if($completed): ?><span class="completed-badge">✓ Completed <?= e(date('M j, Y',strtotime((string)$completed))) ?></span><?php else: ?><form method="post"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><button class="button button-primary" type="submit">Mark lesson complete <span>✓</span></button></form><?php endif; ?><?php if($quiz): ?><a class="button button-quiet" href="<?= e(app_url('quiz.php?id='.(int)$quiz['id'])) ?>">Take the quiz <span>→</span></a><?php endif; ?></div></article></section>
+<?php require __DIR__.'/partials/footer.php'; ?>
